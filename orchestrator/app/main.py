@@ -41,7 +41,9 @@ def create_app() -> FastAPI:
     async def health_check() -> dict[str, str]:
         return {"status": "ok"}
 
-    # Future: app.include_router(techpacks_router, prefix="/api/v1")
+    from app.api.crew_endpoint import router as crew_router
+
+    app.include_router(crew_router, prefix="/api/v1")
 
     return app
 
