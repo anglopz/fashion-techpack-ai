@@ -1,6 +1,9 @@
 # Claude Code local state
 .claude/
 
+# Local initiative planning docs
+initiatives/
+
 # Environment
 .env
 .env.local
