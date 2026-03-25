@@ -42,8 +42,10 @@ def create_app() -> FastAPI:
         return {"status": "ok"}
 
     from app.api.crew_endpoint import router as crew_router
+    from app.api.techpacks import router as techpacks_router
 
     app.include_router(crew_router, prefix="/api/v1")
+    app.include_router(techpacks_router, prefix="/api/v1")
 
     return app
 
