@@ -8,6 +8,7 @@ pydantic
 # Agent frameworks
 langgraph
 crewai
+litellm
 
 # LLM client (OpenRouter uses OpenAI-compatible API)
 openai
