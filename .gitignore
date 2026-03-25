@@ -1,5 +1,4 @@
-# Local dev orchestration (not tracked)
-initiatives/
+# Claude Code local state
 .claude/
 
 # Environment
