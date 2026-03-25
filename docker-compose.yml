@@ -1,6 +1,24 @@
 version: "3.8"
 
 services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    ports:
+      - "${GATEWAY_PORT:-3000}:3000"
+    environment:
+      - GATEWAY_PORT=3000
+      - ORCHESTRATOR_URL=http://orchestrator:8000
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-me}
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX:-100}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS:-900000}
+    depends_on:
+      orchestrator:
+        condition: service_started
+    restart: unless-stopped
+
   orchestrator:
     build:
       context: ./orchestrator
@@ -10,9 +28,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - redis
-    volumes:
-      - ./orchestrator:/app
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   redis:
