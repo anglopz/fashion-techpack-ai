@@ -1,0 +1,33 @@
+# Web framework
+fastapi
+uvicorn[standard]
+
+# Data validation
+pydantic
+
+# Agent frameworks
+langgraph
+crewai
+
+# LLM client (OpenRouter uses OpenAI-compatible API)
+openai
+
+# Vector DB / RAG
+supabase
+
+# Caching
+redis
+
+# Document processing (loaders + splitters only)
+langchain
+langchain-community
+
+# HTTP client (gateway proxy, general HTTP calls)
+httpx
+
+# Config
+python-dotenv
+
+# Testing
+pytest
+pytest-asyncio
