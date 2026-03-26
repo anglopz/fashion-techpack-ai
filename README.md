@@ -57,9 +57,14 @@ cp .env.example .env
 # Start all services
 docker-compose up --build
 
-# Gateway: http://localhost:3000
-# Orchestrator: http://localhost:8000
+# Demo UI:        http://localhost:3000
+# Gateway API:    http://localhost:3000/api/v1
+# Orchestrator:   http://localhost:8000
 ```
+
+### Demo
+
+Open **http://localhost:3000** in your browser for an interactive demo dashboard. No auth required — it auto-fetches a demo JWT. Enter a design brief, pick an engine (LangGraph or CrewAI), and watch the 5-agent pipeline run in real-time via WebSocket streaming.
 
 ### Local Development (without Docker)
 
@@ -76,6 +81,14 @@ npm run dev
 ```
 
 ## API Endpoints
+
+### Demo Auth
+
+```bash
+# Get a demo token (no auth required)
+curl http://localhost:3000/api/v1/auth/demo-token
+# → {"token": "eyJ..."}
+```
 
 ### Tech Packs
 
@@ -148,7 +161,7 @@ Both frameworks produce the same `TechPack` schema. The project keeps both imple
 ## Testing
 
 ```bash
-# Gateway tests (33 tests)
+# Gateway tests (35 tests)
 cd gateway && npm test
 
 # Orchestrator tests (105+ tests)
@@ -162,7 +175,8 @@ fashion-techpack-ai/
 ├── gateway/                  # Node.js API Gateway
 │   ├── src/
 │   │   ├── index.ts          # Express app factory
-│   │   ├── routes/           # techpacks, fabrics, health
+│   │   ├── public/           # Demo dashboard (index.html)
+│   │   ├── routes/           # techpacks, fabrics, health, auth
 │   │   ├── middleware/        # auth, rateLimit, validation
 │   │   ├── ws/               # WebSocket relay
 │   │   └── types/            # TypeScript interfaces
