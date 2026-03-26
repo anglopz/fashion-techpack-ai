@@ -4,19 +4,25 @@ A multi-agent AI system that generates structured fashion tech packs from unstru
 
 ## Architecture
 
-```
-Client → Node.js Gateway (Express/TS) → FastAPI Orchestrator (Python)
-              │                                    │
-              ├── JWT Auth                         ├── LangGraph Pipeline
-              ├── Rate Limiting                    │   ├── Brief Analyzer
-              ├── Zod Validation                   │   ├── Spec Extractor
-              └── WebSocket Relay                  │   ├── Fabric Matcher (RAG)
-                                                   │   ├── BOM Builder
-                                                   │   └── Tech Pack Writer
-                                                   │
-                                                   ├── CrewAI Prototype
-                                                   ├── Supabase pgvector
-                                                   └── Redis Cache
+```mermaid
+graph LR
+    Client[React / API Consumer] -->|REST + WebSocket| Gateway[Node.js Gateway]
+    Gateway -->|JWT Auth\nRate Limit\nZod Validation| Gateway
+    Gateway -->|Proxy HTTP| Orchestrator[FastAPI Orchestrator]
+    Gateway -->|Relay WS| Orchestrator
+    Orchestrator -->|Production| LangGraph[LangGraph Pipeline]
+    Orchestrator -->|Prototype| CrewAI[CrewAI Pipeline]
+    LangGraph -->|1. Parse brief| BA[Brief Analyzer]
+    BA -->|2. Extract specs| SE[Spec Extractor]
+    SE -->|3. Match fabrics| FM[Fabric Matcher]
+    FM -->|4. Build BOM| BOM[BOM Builder]
+    BOM -->|5. Assemble| TPW[Tech Pack Writer]
+    FM -->|RAG search| Supabase[(Supabase pgvector)]
+    Orchestrator -->|Checkpointing| Redis[(Redis)]
+    BA & SE & BOM & TPW -->|LLM calls| OpenRouter[OpenRouter]
+    OpenRouter -->|Reasoning| Claude[Claude Sonnet]
+    OpenRouter -->|Extraction| GPT[GPT-4o-mini]
+    OpenRouter -->|Embeddings| Embed[text-embedding-3-small]
 ```
 
 ## Tech Stack
