@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fashion Tech Pack AI</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0b;
+    --surface: #141417;
+    --surface-2: #1c1c21;
+    --border: #27272a;
+    --border-hover: #3f3f46;
+    --text: #fafafa;
+    --text-muted: #a1a1aa;
+    --text-dim: #71717a;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.15);
+    --green: #22c55e;
+    --green-glow: rgba(34, 197, 94, 0.15);
+    --red: #ef4444;
+    --red-glow: rgba(239, 68, 68, 0.15);
+    --yellow: #eab308;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+  }
+  .status-label { font-size: 13px; color: var(--text-muted); }
+
+  /* Layout */
+  .main {
+    display: grid;
+    grid-template-columns: 340px 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    min-height: calc(100vh - 57px - 48px);
+  }
+  .panel {
+    background: var(--bg);
+    padding: 24px;
+    overflow-y: auto;
+  }
+  .panel-title {
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+  }
+
+  /* Form */
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  textarea, select, input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  textarea:focus, select:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  textarea { resize: vertical; min-height: 120px; }
+  select { cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2371717a' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Pipeline steps */
+  .pipeline { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 52px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .step.completed:not(:last-child)::after { background: var(--green); }
+  .step.running:not(:last-child)::after {
+    background: linear-gradient(to bottom, var(--accent), var(--border));
+  }
+
+  .step-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    transition: all 0.3s;
+    position: relative;
+    z-index: 1;
+  }
+  .step.pending .step-icon { color: var(--text-dim); }
+  .step.running .step-icon {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+    color: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .step.completed .step-icon {
+    border-color: var(--green);
+    background: var(--green-glow);
+    color: var(--green);
+  }
+  .step.failed .step-icon {
+    border-color: var(--red);
+    background: var(--red-glow);
+    color: var(--red);
+  }
+
+  .step-content { flex: 1; min-width: 0; }
+  .step-name {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .step-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .step-message {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding: 6px 10px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border-left: 2px solid var(--accent);
+  }
+  .step.completed .step-message { border-left-color: var(--green); }
+  .step-time {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(59, 130, 246, 0); }
+  }
+
+  /* Result viewer */
+  .result-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 300px;
+    color: var(--text-dim);
+    gap: 12px;
+  }
+  .result-placeholder-icon { font-size: 48px; opacity: 0.3; }
+  .result-placeholder-text { font-size: 14px; }
+
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: inherit;
+  }
+  .tab:hover { color: var(--text-muted); }
+  .tab.active {
+    color: var(--text);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .result-card-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .result-card-value {
+    font-size: 14px;
+    color: var(--text);
+  }
+  .result-card-value pre {
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: var(--text-muted);
+    line-height: 1.6;
+  }
+
+  .kv-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 6px 12px;
+    font-size: 13px;
+  }
+  .kv-label { color: var(--text-dim); }
+  .kv-value { color: var(--text); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 2px;
+  }
+
+  .fabric-card, .bom-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .fabric-name, .bom-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .fabric-detail, .bom-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-wrap: wrap;
+  }
+  .tech-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .main {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto;
+    }
+  }
+
+  /* Fade in animation for results */
+  .fade-in {
+    animation: fadeIn 0.3s ease-in;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Error state */
+  .error-banner {
+    padding: 12px 16px;
+    background: var(--red-glow);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius);
+    color: var(--red);
+    font-size: 13px;
+    margin-bottom: 16px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>Fashion Tech Pack AI</h1>
+    <span class="badge">Demo</span>
+  </div>
+  <div class="header-right">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="status-label" id="statusLabel">Ready</span>
+  </div>
+</header>
+
+<div class="main">
+  <!-- Left: Input Form -->
+  <div class="panel">
+    <div class="panel-title">Design Brief</div>
+    <div id="errorBanner" class="error-banner"></div>
+
+    <div class="form-group">
+      <label for="description">Description</label>
+      <textarea id="description" placeholder="Describe the garment...">Relaxed-fit organic cotton t-shirt for SS26 collection. Features dropped shoulders, a slightly cropped length, and ribbed crew neckline. Primary colorway: washed navy with cream contrast stitching. Intended for sustainable casual wear line with GOTS-certified fabrics.</textarea>
+    </div>
+
+    <div class="form-group">
+      <label for="garmentType">Garment Type</label>
+      <select id="garmentType">
+        <option value="">Auto-detect</option>
+        <option value="top" selected>Top</option>
+        <option value="bottom">Bottom</option>
+        <option value="dress">Dress</option>
+        <option value="outerwear">Outerwear</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="fabricPrefs">Fabric Preferences</label>
+      <input type="text" id="fabricPrefs" placeholder="e.g. organic cotton, linen" value="organic cotton, jersey knit">
+    </div>
+
+    <div class="form-group">
+      <label for="colorPalette">Color Palette</label>
+      <input type="text" id="colorPalette" placeholder="e.g. navy, cream, olive" value="washed navy, cream">
+    </div>
+
+    <div class="form-group">
+      <label for="engine">Engine</label>
+      <select id="engine">
+        <option value="langgraph" selected>LangGraph (5-agent pipeline)</option>
+        <option value="crewai">CrewAI (prototype)</option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary" id="generateBtn" onclick="generate()">
+      Generate Tech Pack
+    </button>
+  </div>
+
+  <!-- Center: Pipeline Progress -->
+  <div class="panel">
+    <div class="panel-title">Agent Pipeline</div>
+    <div class="pipeline" id="pipeline">
+      <div class="step pending" data-agent="brief_analyzer">
+        <div class="step-icon">1</div>
+        <div class="step-content">
+          <div class="step-name">Brief Analyzer</div>
+          <div class="step-desc">Parses design brief into structured data</div>
+        </div>
+      </div>
+      <div class="step pending" data-agent="spec_extractor">
+        <div class="step-icon">2</div>
+        <div class="step-content">
+          <div class="step-name">Spec Extractor</div>
+          <div class="step-desc">Generates measurements and size specs</div>
+        </div>
+      </div>
+      <div class="step pending" data-agent="fabric_matcher">
+        <div class="step-icon">3</div>
+        <div class="step-content">
+          <div class="step-name">Fabric Matcher</div>
+          <div class="step-desc">Matches fabrics from catalog via vector search</div>
+        </div>
+      </div>
+      <div class="step pending" data-agent="bom_builder">
+        <div class="step-icon">4</div>
+        <div class="step-content">
+          <div class="step-name">BOM Builder</div>
+          <div class="step-desc">Builds bill of materials with costs</div>
+        </div>
+      </div>
+      <div class="step pending" data-agent="tech_pack_writer">
+        <div class="step-icon">5</div>
+        <div class="step-content">
+          <div class="step-name">Tech Pack Writer</div>
+          <div class="step-desc">Assembles final tech pack document</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Result Viewer -->
+  <div class="panel">
+    <div class="panel-title">Result</div>
+    <div id="resultPlaceholder" class="result-placeholder">
+      <div class="result-placeholder-icon">&#9634;</div>
+      <div class="result-placeholder-text">Results will appear here after generation</div>
+    </div>
+    <div id="resultViewer" style="display:none" class="fade-in">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-tab="overview" onclick="switchTab('overview')">Overview</button>
+        <button class="tab" data-tab="measurements" onclick="switchTab('measurements')">Measurements</button>
+        <button class="tab" data-tab="fabrics" onclick="switchTab('fabrics')">Fabrics</button>
+        <button class="tab" data-tab="bom" onclick="switchTab('bom')">BOM</button>
+        <button class="tab" data-tab="construction" onclick="switchTab('construction')">Construction</button>
+        <button class="tab" data-tab="raw" onclick="switchTab('raw')">Raw JSON</button>
+      </div>
+
+      <div id="tab-overview" class="tab-content active"></div>
+      <div id="tab-measurements" class="tab-content"></div>
+      <div id="tab-fabrics" class="tab-content"></div>
+      <div id="tab-bom" class="tab-content"></div>
+      <div id="tab-construction" class="tab-content"></div>
+      <div id="tab-raw" class="tab-content"></div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <span class="tech-badge">Node.js</span>
+  <span class="tech-badge">Express</span>
+  <span class="tech-badge">Python</span>
+  <span class="tech-badge">FastAPI</span>
+  <span class="tech-badge">LangGraph</span>
+  <span class="tech-badge">CrewAI</span>
+  <span class="tech-badge">OpenRouter</span>
+  <span class="tech-badge">pgvector</span>
+  <span class="tech-badge">WebSocket</span>
+</footer>
+
+<script>
+const AGENTS = ['brief_analyzer', 'spec_extractor', 'fabric_matcher', 'bom_builder', 'tech_pack_writer'];
+let token = null;
+let ws = null;
+let agentStartTimes = {};
+let pipelineStartTime = null;
+
+function showError(msg) {
+  const banner = document.getElementById('errorBanner');
+  banner.textContent = msg;
+  banner.style.display = 'block';
+  setTimeout(() => banner.style.display = 'none', 8000);
+}
+
+function setStatus(text, color) {
+  document.getElementById('statusLabel').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.style.background = color;
+  dot.style.boxShadow = `0 0 6px ${color}`;
+}
+
+async function getToken() {
+  if (token) return token;
+  const res = await fetch('/api/v1/auth/demo-token');
+  if (!res.ok) throw new Error('Failed to get demo token');
+  const data = await res.json();
+  token = data.token;
+  return token;
+}
+
+function resetPipeline() {
+  document.querySelectorAll('.step').forEach(step => {
+    step.className = 'step pending';
+    const msgEl = step.querySelector('.step-message');
+    if (msgEl) msgEl.remove();
+    const timeEl = step.querySelector('.step-time');
+    if (timeEl) timeEl.remove();
+  });
+  document.getElementById('resultPlaceholder').style.display = 'flex';
+  document.getElementById('resultViewer').style.display = 'none';
+  agentStartTimes = {};
+}
+
+function updateStep(agentName, status, message) {
+  const step = document.querySelector(`.step[data-agent="${agentName}"]`);
+  if (!step) return;
+
+  step.className = `step ${status}`;
+
+  if (status === 'running' && !agentStartTimes[agentName]) {
+    agentStartTimes[agentName] = Date.now();
+  }
+
+  if (message) {
+    let msgEl = step.querySelector('.step-message');
+    if (!msgEl) {
+      msgEl = document.createElement('div');
+      msgEl.className = 'step-message';
+      step.querySelector('.step-content').appendChild(msgEl);
+    }
+    msgEl.textContent = message;
+  }
+
+  if (status === 'completed' && agentStartTimes[agentName]) {
+    const elapsed = ((Date.now() - agentStartTimes[agentName]) / 1000).toFixed(1);
+    let timeEl = step.querySelector('.step-time');
+    if (!timeEl) {
+      timeEl = document.createElement('div');
+      timeEl.className = 'step-time';
+      step.querySelector('.step-content').appendChild(timeEl);
+    }
+    timeEl.textContent = `${elapsed}s`;
+  }
+}
+
+// Track which agents we've already marked completed
+let completedAgents = new Set();
+
+function processMessages(messages) {
+  // Messages accumulate — each has { agent, content }
+  // Mark agents with messages as completed, the next agent without a message as running
+  const agentsWithMessages = new Set();
+  messages.forEach(msg => {
+    if (msg.agent) agentsWithMessages.add(msg.agent);
+  });
+
+  AGENTS.forEach(agent => {
+    if (agentsWithMessages.has(agent) && !completedAgents.has(agent)) {
+      const msg = messages.find(m => m.agent === agent);
+      updateStep(agent, 'completed', msg ? msg.content : '');
+      completedAgents.add(agent);
+    }
+  });
+
+  // Find first agent without a message — that's the running one
+  const runningAgent = AGENTS.find(a => !agentsWithMessages.has(a));
+  if (runningAgent) {
+    updateStep(runningAgent, 'running', null);
+  }
+}
+
+function renderResult(data) {
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  const viewer = document.getElementById('resultViewer');
+  viewer.style.display = 'block';
+
+  // Try to extract tech_pack from various result shapes
+  const techPack = data?.tech_pack || data?.result?.tech_pack || data;
+  const overview = techPack?.overview || techPack?.garment_overview || {};
+  const measurements = techPack?.measurements || data?.result?.measurements || {};
+  const fabrics = techPack?.fabrics || data?.result?.fabrics || [];
+  const bom = techPack?.bom || techPack?.bill_of_materials || data?.result?.bom || [];
+  const construction = techPack?.construction || techPack?.construction_details || data?.result?.construction || [];
+
+  // Overview tab
+  document.getElementById('tab-overview').innerHTML = buildOverview(overview, techPack);
+
+  // Measurements tab
+  document.getElementById('tab-measurements').innerHTML = buildMeasurements(measurements);
+
+  // Fabrics tab
+  document.getElementById('tab-fabrics').innerHTML = buildFabrics(fabrics);
+
+  // BOM tab
+  document.getElementById('tab-bom').innerHTML = buildBOM(bom);
+
+  // Construction tab
+  document.getElementById('tab-construction').innerHTML = buildConstruction(construction);
+
+  // Raw JSON tab
+  document.getElementById('tab-raw').innerHTML = `<div class="result-card"><div class="result-card-value"><pre>${JSON.stringify(data, null, 2)}</pre></div></div>`;
+}
+
+function buildOverview(overview, techPack) {
+  const fields = [];
+  if (overview.garment_type || techPack?.garment_type) fields.push(['Garment Type', overview.garment_type || techPack?.garment_type]);
+  if (overview.style || techPack?.style) fields.push(['Style', overview.style || techPack?.style]);
+  if (overview.season || techPack?.season || techPack?.target_season) fields.push(['Season', overview.season || techPack?.season || techPack?.target_season]);
+  if (overview.description || techPack?.description) fields.push(['Description', overview.description || techPack?.description]);
+  if (techPack?.color_palette) fields.push(['Colors', Array.isArray(techPack.color_palette) ? techPack.color_palette.join(', ') : techPack.color_palette]);
+
+  if (fields.length === 0) {
+    // Fallback: show all top-level keys as overview
+    Object.entries(techPack || {}).forEach(([k, v]) => {
+      if (typeof v === 'string' || typeof v === 'number') fields.push([k.replace(/_/g, ' '), v]);
+    });
+  }
+
+  return `<div class="result-card"><div class="kv-grid">${fields.map(([k, v]) => `<div class="kv-label">${capitalize(k)}</div><div class="kv-value">${v}</div>`).join('')}</div></div>`;
+}
+
+function buildMeasurements(measurements) {
+  if (!measurements || (typeof measurements === 'object' && Object.keys(measurements).length === 0)) {
+    return '<div class="result-card"><div class="result-card-value" style="color:var(--text-dim)">No measurements data</div></div>';
+  }
+
+  let html = '';
+  const m = measurements.measurements || measurements;
+  const keyMeasurements = m.key_measurements || measurements.key_measurements;
+
+  // Header info
+  const meta = [];
+  const fitType = m.fit_type || measurements.fit_type;
+  const sizeRange = m.size_range || measurements.size_range;
+  const garmentType = m.garment_type || measurements.garment_type;
+  if (garmentType) meta.push(['Garment', typeof garmentType === 'object' ? garmentType.value || garmentType : garmentType]);
+  if (fitType) meta.push(['Fit', capitalize(fitType)]);
+  if (sizeRange) meta.push(['Sizes', sizeRange]);
+  if (meta.length) {
+    html += `<div class="result-card" style="margin-bottom:12px"><div class="kv-grid">${meta.map(([k,v]) => `<div class="kv-label">${k}</div><div class="kv-value">${v}</div>`).join('')}</div></div>`;
+  }
+
+  // Size table
+  if (keyMeasurements && typeof keyMeasurements === 'object') {
+    const sizes = Object.keys(keyMeasurements);
+    const dims = [...new Set(sizes.flatMap(s => Object.keys(keyMeasurements[s])))];
+    html += '<div class="result-card" style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px">';
+    html += '<thead><tr><th style="text-align:left;padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text-dim);font-weight:500">cm</th>';
+    sizes.forEach(s => { html += `<th style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text-muted);font-weight:600">${s}</th>`; });
+    html += '</tr></thead><tbody>';
+    dims.forEach(dim => {
+      html += `<tr><td style="padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">${capitalize(dim.replace(/_/g, ' '))}</td>`;
+      sizes.forEach(s => {
+        const val = keyMeasurements[s]?.[dim];
+        html += `<td style="text-align:right;padding:6px 10px;border-bottom:1px solid var(--border);color:var(--text);font-variant-numeric:tabular-nums">${val != null ? val : '—'}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
+
+  // Notes
+  const notes = m.notes || measurements.notes;
+  if (notes && Array.isArray(notes) && notes.length) {
+    html += '<div class="result-card" style="margin-top:12px"><div class="result-card-title">Notes</div>';
+    notes.forEach(n => {
+      const parts = String(n).split(/:\s*(.+)/);
+      if (parts.length >= 2) {
+        html += `<div style="margin-bottom:6px;font-size:13px"><span style="color:var(--text-dim)">${capitalize(parts[0].replace(/_/g, ' '))}:</span> <span style="color:var(--text-muted)">${parts[1]}</span></div>`;
+      } else {
+        html += `<div style="margin-bottom:6px;font-size:13px;color:var(--text-muted)">${n}</div>`;
+      }
+    });
+    html += '</div>';
+  }
+
+  return html || '<div class="result-card"><div class="result-card-value" style="color:var(--text-dim)">No measurements data</div></div>';
+}
+
+function buildFabrics(fabrics) {
+  if (!fabrics || (Array.isArray(fabrics) && fabrics.length === 0)) {
+    return '<div class="result-card"><div class="result-card-value" style="color:var(--text-dim)">No fabrics data</div></div>';
+  }
+  const arr = Array.isArray(fabrics) ? fabrics : [fabrics];
+  return arr.map(f => {
+    const name = f.name || f.fabric_name || 'Fabric';
+    const details = [];
+    if (f.composition) details.push(`Composition: ${f.composition}`);
+    if (f.weight_gsm || f.weight) details.push(`Weight: ${f.weight_gsm || f.weight} gsm`);
+    if (f.color) details.push(`Color: ${f.color}`);
+    if (f.care_instructions) details.push(`Care: ${Array.isArray(f.care_instructions) ? f.care_instructions.join(', ') : f.care_instructions}`);
+    if (details.length === 0) {
+      Object.entries(f).forEach(([k, v]) => {
+        if (typeof v === 'string' || typeof v === 'number') details.push(`${capitalize(k.replace(/_/g, ' '))}: ${v}`);
+      });
+    }
+    return `<div class="fabric-card"><div class="fabric-name">${name}</div>${details.map(d => `<div class="fabric-detail">${d}</div>`).join('')}</div>`;
+  }).join('');
+}
+
+function buildBOM(bom) {
+  if (!bom || (Array.isArray(bom) && bom.length === 0)) {
+    return '<div class="result-card"><div class="result-card-value" style="color:var(--text-dim)">No BOM data</div></div>';
+  }
+  const arr = Array.isArray(bom) ? bom : bom.items || [bom];
+  return arr.map(item => {
+    const name = item.name || item.item_name || item.component || 'Item';
+    const details = [];
+    if (item.quantity) details.push(`Qty: ${item.quantity}`);
+    if (item.unit) details.push(`Unit: ${item.unit}`);
+    if (item.unit_cost || item.cost) details.push(`Cost: $${item.unit_cost || item.cost}`);
+    if (item.supplier) details.push(`Supplier: ${item.supplier}`);
+    if (item.category) details.push(`Category: ${item.category}`);
+    if (details.length === 0) {
+      Object.entries(item).forEach(([k, v]) => {
+        if (typeof v === 'string' || typeof v === 'number') details.push(`${capitalize(k.replace(/_/g, ' '))}: ${v}`);
+      });
+    }
+    return `<div class="bom-row"><div class="bom-name">${name}</div><div class="bom-detail">${details.join(' &middot; ')}</div></div>`;
+  }).join('');
+}
+
+function buildConstruction(construction) {
+  if (!construction || (Array.isArray(construction) && construction.length === 0)) {
+    return '<div class="result-card"><div class="result-card-value" style="color:var(--text-dim)">No construction data</div></div>';
+  }
+  const arr = Array.isArray(construction) ? construction : [construction];
+  return arr.map((c, i) => {
+    const name = c.step || c.operation || c.name || `Step ${i + 1}`;
+    const details = [];
+    if (c.description) details.push(c.description);
+    if (c.seam_type) details.push(`Seam: ${c.seam_type}`);
+    if (c.stitch_type) details.push(`Stitch: ${c.stitch_type}`);
+    if (c.notes) details.push(c.notes);
+    if (details.length === 0) {
+      Object.entries(c).forEach(([k, v]) => {
+        if (typeof v === 'string') details.push(`${capitalize(k.replace(/_/g, ' '))}: ${v}`);
+      });
+    }
+    return `<div class="result-card"><div class="result-card-title">${name}</div><div class="result-card-value">${details.join('<br>')}</div></div>`;
+  }).join('');
+}
+
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.toggle('active', tc.id === `tab-${tabName}`));
+}
+
+async function generate() {
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  resetPipeline();
+  completedAgents = new Set();
+  setStatus('Connecting', 'var(--yellow)');
+
+  const engine = document.getElementById('engine').value;
+
+  try {
+    const jwt = await getToken();
+
+    const body = {
+      description: document.getElementById('description').value.trim(),
+      garment_type: document.getElementById('garmentType').value || undefined,
+      fabric_preferences: document.getElementById('fabricPrefs').value.split(',').map(s => s.trim()).filter(Boolean),
+      color_palette: document.getElementById('colorPalette').value.split(',').map(s => s.trim()).filter(Boolean),
+    };
+
+    if (!body.description) {
+      showError('Please enter a garment description');
+      btn.disabled = false;
+      btn.textContent = 'Generate Tech Pack';
+      setStatus('Ready', 'var(--green)');
+      return;
+    }
+
+    if (engine === 'crewai') {
+      await generateCrewAI(jwt, body, btn);
+    } else {
+      await generateLangGraph(jwt, body, btn);
+    }
+
+  } catch (err) {
+    showError(err.message);
+    setStatus('Error', 'var(--red)');
+    btn.disabled = false;
+    btn.textContent = 'Generate Tech Pack';
+  }
+}
+
+async function generateCrewAI(jwt, body, btn) {
+  // CrewAI is synchronous — show all agents as running simultaneously
+  pipelineStartTime = Date.now();
+  setStatus('Processing (CrewAI)', 'var(--accent)');
+  AGENTS.forEach(a => {
+    updateStep(a, 'running', null);
+    agentStartTimes[a] = Date.now();
+  });
+
+  const res = await fetch('/api/v1/techpacks/crew', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwt}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || err.detail || 'CrewAI pipeline failed');
+  }
+
+  const data = await res.json();
+
+  if (data.status === 'completed') {
+    AGENTS.forEach(a => updateStep(a, 'completed', ''));
+    setStatus('Completed', 'var(--green)');
+    renderResult(data);
+  } else {
+    setStatus('Failed', 'var(--red)');
+    showError(data.error || 'CrewAI pipeline failed');
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Generate Tech Pack';
+}
+
+async function generateLangGraph(jwt, body, btn) {
+  // Create tech pack job
+  const res = await fetch('/api/v1/techpacks', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${jwt}`,
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || err.detail || 'Failed to create tech pack');
+  }
+
+  const job = await res.json();
+  pipelineStartTime = Date.now();
+  setStatus('Processing', 'var(--accent)');
+
+  // Mark first agent as running
+  updateStep('brief_analyzer', 'running', null);
+  agentStartTimes['brief_analyzer'] = Date.now();
+
+  // Connect WebSocket
+  const wsProtocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const wsUrl = `${wsProtocol}//${location.host}${job.ws_url}`;
+  ws = new WebSocket(wsUrl);
+
+  ws.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+
+    if (msg.event === 'done') {
+      if (msg.status === 'completed') {
+        setStatus('Completed', 'var(--green)');
+        AGENTS.forEach(a => {
+          if (!completedAgents.has(a)) updateStep(a, 'completed', '');
+        });
+        fetchResult(job.id, jwt);
+      } else {
+        setStatus('Failed', 'var(--red)');
+        showError('Pipeline failed');
+      }
+      btn.disabled = false;
+      btn.textContent = 'Generate Tech Pack';
+      return;
+    }
+
+    if (msg.agent) {
+      processMessages([msg]);
+    }
+  };
+
+  ws.onerror = () => {
+    showError('WebSocket connection error');
+    setStatus('Error', 'var(--red)');
+    btn.disabled = false;
+    btn.textContent = 'Generate Tech Pack';
+  };
+
+  ws.onclose = () => {
+    if (btn.disabled) {
+      pollResult(job.id, jwt, btn);
+    }
+  };
+}
+
+async function fetchResult(jobId, jwt) {
+  try {
+    const res = await fetch(`/api/v1/techpacks/${jobId}`, {
+      headers: { 'Authorization': `Bearer ${jwt}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      renderResult(data);
+    }
+  } catch (e) {
+    console.error('Failed to fetch result:', e);
+  }
+}
+
+async function pollResult(jobId, jwt, btn) {
+  // Fallback: poll GET endpoint if WebSocket closes early
+  let attempts = 0;
+  const poll = async () => {
+    attempts++;
+    try {
+      const res = await fetch(`/api/v1/techpacks/${jobId}`, {
+        headers: { 'Authorization': `Bearer ${jwt}` },
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data.agent_messages) {
+        processMessages(data.agent_messages);
+      }
+
+      if (data.status === 'completed') {
+        setStatus('Completed', 'var(--green)');
+        AGENTS.forEach(a => { if (!completedAgents.has(a)) updateStep(a, 'completed', ''); });
+        renderResult(data);
+        btn.disabled = false;
+        btn.textContent = 'Generate Tech Pack';
+        return;
+      }
+      if (data.status === 'failed') {
+        setStatus('Failed', 'var(--red)');
+        showError(data.error || 'Pipeline failed');
+        btn.disabled = false;
+        btn.textContent = 'Generate Tech Pack';
+        return;
+      }
+    } catch (e) { /* ignore */ }
+
+    if (attempts < 60) setTimeout(poll, 2000);
+    else {
+      setStatus('Timeout', 'var(--red)');
+      btn.disabled = false;
+      btn.textContent = 'Generate Tech Pack';
+    }
+  };
+  poll();
+}
+</script>
+</body>
+</html>

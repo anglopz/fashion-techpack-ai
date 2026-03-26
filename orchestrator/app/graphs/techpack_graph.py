@@ -39,12 +39,13 @@ def validation_node(state: TechPackState) -> dict[str, Any]:
         "errors": errors,
         "retry_count": retry_count,
         "current_agent": "validation",
-        "agent_messages": [
-            {
-                "agent": "validation",
-                "message": "Validation passed" if not errors else f"Validation failed: {errors}",
-            }
-        ],
+        "agent_messages": state.get("agent_messages", [])
+            + [
+                {
+                    "agent": "validation",
+                    "message": "Validation passed" if not errors else f"Validation failed: {errors}",
+                }
+            ],
     }
 
 

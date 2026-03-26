@@ -47,7 +47,7 @@ class CreateTechPackResponse(BaseModel):
 
 
 async def _run_graph(job_id: str, brief: DesignBrief) -> None:
-    """Execute the LangGraph workflow in the background."""
+    """Execute the LangGraph workflow in the background, streaming agent progress."""
     try:
         graph = build_techpack_graph()
         initial_state: TechPackState = {
@@ -63,15 +63,50 @@ async def _run_graph(job_id: str, brief: DesignBrief) -> None:
             "errors": [],
             "retry_count": 0,
         }
-        result = await graph.ainvoke(
+        final_state = None
+        async for state in graph.astream(
             initial_state,
             config={"configurable": {"thread_id": job_id}},
-        )
-        _jobs[job_id]["result"] = result
+            stream_mode="values",
+        ):
+            # Each event is the full state after a node completes
+            final_state = state
+            messages = state.get("agent_messages", [])
+            if messages:
+                _jobs[job_id]["agent_messages"] = messages
+            _jobs[job_id]["current_agent"] = state.get("current_agent", "")
+
         _jobs[job_id]["status"] = "completed"
+        if final_state:
+            _jobs[job_id]["result"] = _serialize_result(final_state)
     except Exception as exc:
         _jobs[job_id]["status"] = "failed"
         _jobs[job_id]["error"] = str(exc)
+
+
+def _serialize_result(state: dict[str, Any]) -> dict[str, Any]:
+    """Extract serializable result data from the final graph state."""
+    result: dict[str, Any] = {}
+
+    # Serialize Pydantic models and plain dicts
+    for key in ("tech_pack", "measurements"):
+        val = state.get(key)
+        if val is not None:
+            result[key] = val.model_dump() if hasattr(val, "model_dump") else val
+
+    # Serialize lists of Pydantic models
+    for key in ("fabrics", "bom", "construction"):
+        items = state.get(key, [])
+        result[key] = [
+            item.model_dump() if hasattr(item, "model_dump") else item
+            for item in items
+        ]
+
+    if state.get("garment_type"):
+        gt = state["garment_type"]
+        result["garment_type"] = gt.value if hasattr(gt, "value") else str(gt)
+
+    return result
 
 
 # --- Endpoints ---
