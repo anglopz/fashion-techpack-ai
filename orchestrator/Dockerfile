@@ -14,7 +14,6 @@ WORKDIR /app
 
 COPY --from=build /install /usr/local
 COPY app/ ./app/
-COPY seed/ ./seed/
 
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000

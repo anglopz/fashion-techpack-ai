@@ -66,4 +66,17 @@ class LLMClient:
             **kwargs,
         )
         raw = response.choices[0].message.content or "{}"
+        raw = _strip_markdown_fences(raw)
         return response_model.model_validate_json(raw)
+
+
+def _strip_markdown_fences(text: str) -> str:
+    """Remove ```json ... ``` wrappers that some models add."""
+    stripped = text.strip()
+    if stripped.startswith("```"):
+        # Remove opening fence (```json or ```)
+        first_newline = stripped.index("\n")
+        stripped = stripped[first_newline + 1:]
+    if stripped.endswith("```"):
+        stripped = stripped[:-3].rstrip()
+    return stripped
