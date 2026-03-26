@@ -13,6 +13,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
+COPY src/public ./dist/public
 
 ENV NODE_ENV=production
 EXPOSE 3000

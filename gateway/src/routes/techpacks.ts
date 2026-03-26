@@ -20,6 +20,24 @@ export function techpacksRouter(orchestratorUrl: string): Router {
     }
   });
 
+  // CrewAI engine — synchronous, different orchestrator endpoint
+  router.post("/crew", async (req, res) => {
+    try {
+      const response = await axios.post(
+        `${orchestratorUrl}/api/v1/crew/techpacks`,
+        req.body,
+        { timeout: 120000 },
+      );
+      res.status(response.status).json(response.data);
+    } catch (err: any) {
+      if (err.response) {
+        res.status(err.response.status).json(err.response.data);
+      } else {
+        res.status(502).json({ error: "Orchestrator unavailable" });
+      }
+    }
+  });
+
   router.get("/:id", async (req, res) => {
     try {
       const response = await axios.get(

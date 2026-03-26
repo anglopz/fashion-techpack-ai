@@ -1,12 +1,15 @@
 import express from "express";
+import path from "path";
 import cors from "cors";
 import dotenv from "dotenv";
 import { authMiddleware } from "./middleware/auth";
 import { createRateLimiter } from "./middleware/rateLimit";
 import { validate, CreateTechPackSchema, CreateFabricSchema } from "./middleware/validation";
 import { healthRouter } from "./routes/health";
+import { authRouter } from "./routes/auth";
 import { techpacksRouter } from "./routes/techpacks";
 import { fabricsRouter } from "./routes/fabrics";
+import { setupWebSocketHandler } from "./ws/techpackStream";
 
 dotenv.config();
 
@@ -28,16 +31,20 @@ export function createApp(config: AppConfig): express.Express {
   const origins = config.corsOrigins ? config.corsOrigins.split(",") : "*";
   app.use(cors({ origin: origins, credentials: true }));
 
+  // Static files (before auth)
+  app.use(express.static(path.join(__dirname, "public")));
+
   // Rate limiting
   app.use(
     createRateLimiter(config.rateLimitMax ?? 100, config.rateLimitWindowMs ?? 900000),
   );
 
-  // Auth (skips /health)
+  // Auth (skips /health and /api/v1/auth)
   app.use(authMiddleware(config.jwtSecret));
 
   // Routes
   app.use("/health", healthRouter(config.orchestratorUrl));
+  app.use("/api/v1/auth", authRouter(config.jwtSecret));
 
   // Techpacks: validation only on POST, then delegate to router
   app.use("/api/v1/techpacks", (req, res, next) => {
@@ -78,6 +85,10 @@ if (require.main === module) {
   const server = app.listen(port, () => {
     console.log(`Gateway listening on port ${port}`);
   });
+
+  // WebSocket proxy for tech pack streaming
+  const orchestratorWsUrl = config.orchestratorUrl.replace(/^http/, "ws");
+  setupWebSocketHandler(server, orchestratorWsUrl);
 
   for (const signal of ["SIGTERM", "SIGINT"] as const) {
     process.on(signal, () => {

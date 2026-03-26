@@ -10,11 +10,11 @@ declare global {
   }
 }
 
-const SKIP_AUTH_PATHS = ["/health"];
+const SKIP_AUTH_PREFIXES = ["/health", "/api/v1/auth"];
 
 export function authMiddleware(secret: string) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    if (SKIP_AUTH_PATHS.includes(req.path)) {
+    if (SKIP_AUTH_PREFIXES.some((prefix) => req.path.startsWith(prefix))) {
       next();
       return;
     }
